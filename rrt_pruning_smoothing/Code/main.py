@@ -60,6 +60,7 @@ from pickle import TRUE
 import rospy
 from geometry_msgs.msg import Point
 import sys
+import parameter_listener as prm
 #import timeit
 
 
@@ -79,8 +80,8 @@ GOAL_REACH_THRESH = 4
 DRONE_RADIUS = 2
 """
 
-X_LIM = (-10,80)
-Y_LIM = (-10,190)
+X_LIM = (prm._lim_x, prm.lim_x)
+Y_LIM = (prm._lim_y, prm.lim_y)
 
 MAX_ITER = 5000
 STEP_SIZE = 0.1
@@ -88,7 +89,7 @@ GOAL_REACH_THRESH = 2
 
 DRONE_RADIUS = 0.3
 
-start_pose_x = None
+"""start_pose_x = None
 start_pose_y = None
 goal_pose_x = None
 goal_pose_y = None
@@ -107,10 +108,7 @@ def goal_pos_callback(data):
     goal_pose_y = data.y
 	#loginfo for test
     #rospy.loginfo("I heard goal %s ", str(goal_pose_x) + " and " + str(goal_pose_y))
-
-
 def possition_listener():
-    
         # In ROS, nodes are uniquely named. If two nodes with the same
         # name are launched, the previous one is kicked off. The
         # anonymous=True flag means that rospy will choose a unique
@@ -121,7 +119,7 @@ def possition_listener():
         rospy.Subscriber('/goal_point/position', Point, goal_pos_callback)
         # spin() simply keeps python from exiting until this node is stopped
         #rospy.spin()
-        rospy.sleep(2)
+        rospy.sleep(5)"""
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 	step_size = robot_radius * 2
@@ -201,15 +199,24 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 
 def main():
+	
+	prm.main()
+	"""	rospy.loginfo("This start x pose: %s", start_pose_x)
+		rospy.loginfo("This start y pose: %s", start_pose_y)
+		rospy.loginfo("This goal x pose: %s", goal_pose_x)
+		rospy.loginfo("This goal y pose: %s", goal_pose_y)"""
+	#possition_listener()
+	if (prm.start_pose_x == None) or (prm.start_pose_y == None):
+		rospy.loginfo("Problem with start coordinates!")
+		rospy.loginfo("Start x: '%s'" + " and " + "y: '%s' coordinates: ", str(prm.start_pose_x), str(prm.start_pose_y))
+		sys.exit(0)
+	elif  (prm.goal_pose_x == None) or (prm.goal_pose_y == None):
+		rospy.loginfo("Problem with goal coordinates!")
+		rospy.loginfo("Goal x: '%s'" + " and " + "y: '%s' coordinates: ", str(prm.goal_pose_x), str(prm.goal_pose_y))
+		sys.exit(0)
 
-	rospy.loginfo("This start x pose: %s", start_pose_x)
-	rospy.loginfo("This start y pose: %s", start_pose_y)
-	rospy.loginfo("This goal x pose: %s", goal_pose_x)
-	rospy.loginfo("This goal y pose: %s", goal_pose_y)
-
-
-	start_node = node_rrt.Node_rrt(current_coords=(start_pose_x, start_pose_y), parent_coords=None, distance=0)
-	goal_node = node_rrt.Node_rrt(current_coords=(goal_pose_x, goal_pose_y), parent_coords=None, distance=0)
+	start_node = node_rrt.Node_rrt(current_coords=(prm.start_pose_x, prm.start_pose_y), parent_coords=None, distance=0)
+	goal_node = node_rrt.Node_rrt(current_coords=(prm.goal_pose_x, prm.goal_pose_y), parent_coords=None, distance=0)
 
 	start1 = start_node.getXYCoords()
 	quat = [0,0,0,1]
@@ -228,8 +235,8 @@ def main():
 
 
 	fig, ax = plt.subplots()
-	ax.set_xlim(-6, 6)
-	ax.set_ylim(-6, 6)
+	ax.set_xlim(prm._lim_x, prm.lim_x)
+	ax.set_ylim(prm._lim_y, prm.lim_y)
 	fig.gca().set_aspect('equal', adjustable='box')
 	utils.plotPoint(start_node.getXYCoords(), ax, radius=0.06, color='cyan') 	# start
 	utils.plotPoint(goal_node.getXYCoords(), ax, radius=0.06, color='magenta') 	# end
@@ -272,14 +279,4 @@ def main():
 	np.save(file='rrt_sim_smooth_path_coords.npy', arr=rrt_prune_smooth_path_coords)
 
 if __name__ == '__main__':
-	
-	possition_listener()
-	if (start_pose_x == None) or (start_pose_y == None):
-		rospy.loginfo("Problem with start coordinates!")
-		rospy.loginfo("Start x: '%s'" + " and " + "y: '%s' coordinates: ", str(start_pose_x), str(start_pose_y))
-		sys.exit(0)
-	elif  (goal_pose_x == None) or (goal_pose_y == None):
-		rospy.loginfo("Problem with goal coordinates!")
-		rospy.loginfo("Goal x: '%s'" + " and " + "y: '%s' coordinates: ", str(goal_pose_x), str(goal_pose_y))
-		sys.exit(0)
 	main()
