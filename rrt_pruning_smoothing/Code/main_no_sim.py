@@ -60,13 +60,9 @@ import parameter_listener as prm
 X_LIM = (prm._lim_x, prm.lim_x)
 Y_LIM = (prm._lim_y, prm.lim_y)
 
-MAX_ITER = 5000
-STEP_SIZE = 1
-GOAL_REACH_THRESH = 2	
-
-DRONE_RADIUS = 1
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
+
 	step_size = robot_radius * 2
 
 	rrt_nodes = {start_node.getXYCoords(): start_node}
@@ -74,7 +70,7 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 	step_node = start_node
 
 	itr = 0
-	while (not utils.sameRegion(step_node, goal_node, GOAL_REACH_THRESH)) and (itr < MAX_ITER):
+	while (not utils.sameRegion(step_node, goal_node, prm.c_goal_reach_thresh)) and (itr < prm.c_max_iter):
 		# print("Iteration number:", itr)
 		itr += 1
 
@@ -122,7 +118,7 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 			plt.savefig('./frames/' + str(itr) + '.png')
 
 	# Reached Goal
-	if utils.sameRegion(step_node, goal_node, GOAL_REACH_THRESH):
+	if utils.sameRegion(step_node, goal_node, prm.c_goal_reach_thresh):
 		print("Reached Goal!")
 		print("Number of iterations:", itr)
 
@@ -145,6 +141,7 @@ def main():
 
 	prm.main()
 
+	print(X_LIM)
 	#possition_listener()
 	if (prm.start_pose_x == None) or (prm.start_pose_y == None):
 		rospy.loginfo("Problem with start coordinates!")
@@ -168,7 +165,7 @@ def main():
 	obs.generateMap(ax)
 
 	plt.ion()
-	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, robot_radius=DRONE_RADIUS, plotter=ax, write=False)
+	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, robot_radius=prm.c_drone_radius, plotter=ax, write=False)
 	if rrt_path is not None:
 		utils.plotPath(rrt_path, plotter=ax)
 
@@ -183,5 +180,5 @@ def main():
 	# np.save(file='rrt_path_nodes.npy', arr=rrt_path)
 	# np.save(file='rrt_path_coords.npy', arr=rrt_path_coords)
 
-if __name__ == '__main__':
+if __name__ == '__main__':	
 	main()

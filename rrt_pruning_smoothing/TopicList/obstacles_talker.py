@@ -35,12 +35,11 @@
 
 ## Simple talker demo that published std_msgs/Strings messages
 ## to the 'chatter' topic
-
 from re import T, X
 import rospy
 
 from std_msgs.msg import Int64MultiArray
-
+import math
 
 def obstacles_talker():
     rospy.init_node('obstacles_talker')
@@ -82,9 +81,13 @@ def obstacles_talker():
         lim_obstacles.data = [_xlim, xlim, _ylim, ylim]
         lim_obstacles_publisher.publish(lim_obstacles)
 
-        max_iter = 5000
+
+        s_aria = (abs(_xlim)+abs(xlim))*(abs(_ylim)+abs(ylim))
+
+        max_iter = 50000
         step_size = 1
         goal_reach_thresh = 2
+        #goal_reach_thresh = math.sqrt(s_aria)*0.25
 
         drone_radius = 1
 

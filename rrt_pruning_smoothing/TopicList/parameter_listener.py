@@ -62,11 +62,24 @@ possition = []
 
 check_true = True
 
+global c_max_iter
+global c_step_size
+global c_goal_reach_thresh
+global c_drone_radius
+
+def path_planing_param_callback(data):
+	global c_max_iter
+	global c_step_size
+	global c_goal_reach_thresh
+	global c_drone_radius
+	c_max_iter = data.data[0]
+	c_step_size = data.data[1]
+	c_goal_reach_thresh = data.data[2]
+	c_drone_radius = data.data[3]
 def number_obstacles_callback(data):
 	global number_obstacles
 	number_obstacles = data.data[0]
 	rospy.loginfo("This is number: %s", str(number_obstacles))
-	
 def obstacles_pos_callback(data):
 	global pose_x
 	global pose_y
@@ -78,7 +91,6 @@ def obstacles_pos_callback(data):
 	array_1 = [pose_x, pose_y, pose_r]
 	possition.append(array_1)
 	print(possition)
-
 def lim_obstacles_callback(data):
 	global _lim_x
 	global lim_x
@@ -90,7 +102,6 @@ def lim_obstacles_callback(data):
 	_lim_y = data.data[2]
 	lim_y = data.data[3]
 	rospy.loginfo("This is limit: -x:%s, x:%s, -y:%s, y:%s", str(_lim_x), str(lim_x), str(_lim_y), str(lim_y))
-	
 def start_pos_callback(data): 
     global start_pose_x
     global start_pose_y 
@@ -118,8 +129,9 @@ def main():
 	rospy.Subscriber('/path/number_obstacles', Int64MultiArray, number_obstacles_callback)
 	rospy.Subscriber('/path/obstacles', Int64MultiArray, obstacles_pos_callback)
 	rospy.Subscriber('/path/lim_obstacles', Int64MultiArray, lim_obstacles_callback)
+	rospy.Subscriber('/path/planing_param', Int64MultiArray, path_planing_param_callback)
 	#rospy.sleep(10)
-	r = rospy.Rate(10) 
+	r = rospy.Rate(10)
 	while check_true == True:
 		if (len(possition) >= number_obstacles):
 			check_true = False
