@@ -42,25 +42,29 @@ import rospy
 from geometry_msgs.msg import Point
 
 
-def start_point():
+def point_talker():
     check_input = True
-    rospy.init_node('start_point')
+    rospy.init_node('point_talker')
     start_point_publisher = rospy.Publisher('/start_point/position', Point, queue_size=10)
+    goal_point_publisher = rospy.Publisher('/goal_point/position', Point, queue_size=10)
     start_point = Point()
+    goal_point = Point()
     rate = rospy.Rate(5) # 10hz
 
     while not rospy.is_shutdown(): #check_input == True:
 
         start_point.x = -4.0
         start_point.y = -4.0
-
+        goal_point.x = 4.0
+        goal_point.y = 4.0
         start_point_publisher.publish(start_point)
+        goal_point_publisher.publish(goal_point)
 
         rate.sleep()
 
 if __name__ == '__main__':
     try:
-        start_point()
+        point_talker()
     except rospy.ROSInterruptException:
         pass
 """
