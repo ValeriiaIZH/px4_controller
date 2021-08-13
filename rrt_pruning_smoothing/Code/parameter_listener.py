@@ -37,7 +37,7 @@
 ## to the 'chatter' topic
 import rospy
 from rospy.exceptions import ROSInitException
-from std_msgs.msg import Int64MultiArray
+from std_msgs.msg import Float64, Int64MultiArray
 from geometry_msgs.msg import Point as P
 from pickle import TRUE
 
@@ -115,6 +115,14 @@ def goal_pos_callback(data):
     goal_pose_x = data.x
     goal_pose_y = data.y
 
+def capacity_callback(data):
+    global capacity
+    capacity = data
+
+def max_length_callback(data):
+    global max_length
+    max_length = data
+
 def main():
 	global check_true
 	# spin() simply keeps python from exiting until this node is stopped
@@ -130,6 +138,8 @@ def main():
 	rospy.Subscriber('/path/obstacles', Int64MultiArray, obstacles_pos_callback)
 	rospy.Subscriber('/path/lim_obstacles', Int64MultiArray, lim_obstacles_callback)
 	rospy.Subscriber('/path/planing_param', Int64MultiArray, path_planing_param_callback)
+	rospy.Subscriber('/UAV/capacity', Float64, capacity_callback)
+	rospy.Subscriber('/UAV/max_length', Float64, max_length_callback)
 	#rospy.sleep(10)
 	r = rospy.Rate(10)
 	while check_true == True:
