@@ -169,6 +169,17 @@ def main():
 	if rrt_path is not None:
 		utils.plotPath(rrt_path, plotter=ax)
 
+	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
+	path_length = utils.path_length_meters(rrt_path_coords)
+	capacity = float(str(prm.capacity)[5:])
+	max_length = float(str(prm.max_length)[5:])
+	max_uav_path = capacity*max_length
+	if max_uav_path < path_length:
+		print("\nWarning!")
+		print("Path cannot be overcomed!")
+	else:
+		print("Path can be overcomed!")
+
 	finish_time = time.time()
 	result = finish_time - start_time
 	print("Program time: " + str(result) + " seconds.")
@@ -176,7 +187,6 @@ def main():
 	plt.ioff()
 	plt.show()
 
-	# rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
 	# np.save(file='rrt_path_nodes.npy', arr=rrt_path)
 	# np.save(file='rrt_path_coords.npy', arr=rrt_path_coords)
 

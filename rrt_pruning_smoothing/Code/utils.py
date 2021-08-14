@@ -56,3 +56,14 @@ def sameRegion(node1, node2, dist_thresh):
 
 def convertNodeList2CoordList(node_list):
 	return [node_rrt.getXYCoords() for node_rrt in node_list]
+
+def path_length_meters(path):
+	length = 0
+	for i in range(1, len(path)):
+		p1 = path[i-1]
+		p2 = path[i]
+		x1, y1 = p1
+		x2, y2 = p2
+		l = np.sqrt((x1-x2)**2 + (y1-y2)**2)
+		length += l
+	return length
