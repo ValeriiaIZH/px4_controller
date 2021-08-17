@@ -174,14 +174,17 @@ def main():
 
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
 	path_length = utils.path_length_meters(rrt_path_coords)
-	capacity = float(str(prm.capacity)[5:])
-	max_length = float(str(prm.max_length)[5:])
-	max_uav_path = capacity*max_length
-	if max_uav_path < path_length:
-		print("\nWarning!")
-		print("Path cannot be overcomed!")
-	else:
-		print("Path can be overcomed!")
+	try:
+		capacity = float(str(prm.capacity)[5:])
+		max_length = float(str(prm.max_length)[5:])
+		max_uav_path = capacity*max_length
+		if max_uav_path < path_length:
+			print("\nWarning!")
+			print("Path cannot be overcomed!")
+		else:
+			print("Path can be overcomed!")
+	except:
+		print("Capacity and maximum path lenght was not entered!")
 
 	finish_time = time.time()
 	result = finish_time - start_time
@@ -195,8 +198,8 @@ def main():
 
 	with open('path.txt', 'w') as f:
 		f.write(json.dumps(rrt_path_coords))	
-	#plt.ioff()
-	#plt.show()
+	plt.ioff()
+	plt.show()
 	sys.exit
 
 	

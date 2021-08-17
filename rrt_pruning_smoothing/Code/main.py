@@ -267,6 +267,21 @@ def main():
 	if rrt_prune_smooth_path_coords is not None:
 		itr = utils.plotPath(rrt_prune_smooth_path_coords, plotter=ax, itr=itr, path_color='cyan'); itr += 1
 
+	#rrt_smoothed_path_coors = utils.convertNodeList2CoordList(node_list=rrt_prune_smooth_path_coords)
+	#smoothed_path_length = utils.path_length_meters(rrt_smoothed_path_length)
+	smoothed_path_pength = utils.path_length_meters(rrt_prune_smooth_path_coords)
+	try:
+		capacity = float(str(prm.capacity)[5:])
+		max_length = float(str(prm.max_length)[5:])
+		max_uav_path = capacity*max_length
+		if max_uav_path < path_length:
+			print("\nWarning!")
+			print("Path cannot be overcomed!")
+		else:
+			print("Path can be overcomed!")
+	except:
+		print("Capacity and maximum path lenght was not entered!")
+
 	plt.ioff()
 	plt.show()
 
