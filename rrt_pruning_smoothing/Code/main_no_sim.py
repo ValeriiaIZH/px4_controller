@@ -40,6 +40,7 @@ import sys
 import math
 import heapq
 import random 
+import json
 import numpy as np 
 import matplotlib.pyplot as plt
 sys.dont_write_bytecode = True
@@ -51,15 +52,17 @@ import utils
 import obstacles as obs
 import time
 
-from pickle import TRUE
+import pickle
 import rospy
 from geometry_msgs.msg import Point
 import parameter_listener as prm
-
-
+#import path_talker as pt
+ 
 X_LIM = (prm._lim_x, prm.lim_x)
 Y_LIM = (prm._lim_y, prm.lim_y)
 
+global my_rrt_path_coords
+my_rrt_path_coords = []
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
@@ -165,7 +168,7 @@ def main():
 	obs.generateMap(ax)
 
 	plt.ion()
-	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, robot_radius=prm.c_drone_radius, plotter=ax, write=False)
+	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, robot_radius = prm.c_drone_radius, plotter=ax, write=False)
 	if rrt_path is not None:
 		utils.plotPath(rrt_path, plotter=ax)
 
@@ -184,11 +187,19 @@ def main():
 	result = finish_time - start_time
 	print("Program time: " + str(result) + " seconds.")
 
-	plt.ioff()
-	plt.show()
-
 	# np.save(file='rrt_path_nodes.npy', arr=rrt_path)
 	# np.save(file='rrt_path_coords.npy', arr=rrt_path_coords)
 
+	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
+	
+
+	with open('path.txt', 'w') as f:
+		f.write(json.dumps(rrt_path_coords))	
+	#plt.ioff()
+	#plt.show()
+	sys.exit
+
+	
 if __name__ == '__main__':	
 	main()
+
