@@ -41,7 +41,7 @@ from std_msgs.msg import Float64, Int64MultiArray
 from geometry_msgs.msg import Point as P
 from pickle import TRUE
 
-#obsticals
+#obstacles
 pose_x = None
 pose_y = None
 pose_r = None
@@ -68,7 +68,9 @@ global c_goal_reach_thresh
 global c_drone_radius
 
 
-def path_planing_param_callback(data):
+
+
+'''def path_planing_param_callback(data):
 	global c_max_iter
 	global c_step_size
 	global c_goal_reach_thresh
@@ -122,7 +124,7 @@ def capacity_callback(data):
 
 def max_length_callback(data):
     global max_length
-    max_length = data
+    max_length = data'''
 
 def main():
 	global check_true
@@ -133,14 +135,14 @@ def main():
 	# name for our 'listener' node so that multiple listeners can
 	# run simultaneously.
 	rospy.init_node('main', anonymous=True)
-	rospy.Subscriber('/start_point/position', P, start_pos_callback)
-	rospy.Subscriber('/goal_point/position', P, goal_pos_callback)
-	rospy.Subscriber('/path/number_obstacles', Int64MultiArray, number_obstacles_callback)
-	rospy.Subscriber('/path/obstacles', Int64MultiArray, obstacles_pos_callback)
-	rospy.Subscriber('/path/lim_obstacles', Int64MultiArray, lim_obstacles_callback)
-	rospy.Subscriber('/path/planing_param', Int64MultiArray, path_planing_param_callback)
-	rospy.Subscriber('/UAV/capacity', Float64, capacity_callback)
-	rospy.Subscriber('/UAV/max_length', Float64, max_length_callback)
+	rospy.wait_for_message('/start_point/position', start_point)
+	#rospy.wait_for_message('/goal_point/position', goal_pos_callback)
+	#rospy.wait_for_message('/path/number_obstacles', number_obstacles_callback)
+	#rospy.wait_for_message('/path/obstacles', obstacles_pos_callback)
+	#rospy.wait_for_message('/path/lim_obstacles', lim_obstacles_callback)
+	#rospy.wait_for_message('/path/planing_param', path_planing_param_callback)
+	#rospy.wait_for_message('/UAV/capacity', capacity_callback)
+	#rospy.wait_for_message('/UAV/max_length', max_length_callback)
 	#rospy.sleep(10)
 	r = rospy.Rate(10)
 	while check_true == True:

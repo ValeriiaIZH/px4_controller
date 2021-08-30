@@ -42,11 +42,11 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from std_msgs.msg import Header
 import sys
-import main_no_sim as mns
 import time
 import json
 
-# reed from file
+import main_no_sim as mns
+
 with open('path.txt') as f:
         rrt_path_coords = json.loads(f.read())
 
@@ -57,7 +57,7 @@ def path_message(PATH):
 		pose = PoseStamped()
 		pose.header = path.header
 		pose.pose.position = Point(pt[0], pt[1], 10)
-		#pose.pose.orientation = Quaternion(0,0,0,1)
+		pose.pose.orientation = Quaternion(0,0,0,1)
 
 		path.poses.append(pose)
 	return path
@@ -69,11 +69,10 @@ def path_rrt_talker():
 	rospy.loginfo("Path publisher")
 	rate = rospy.Rate(1)
     
-
-	# start publisher
 	path_rrt_publisher = rospy.Publisher('/path_rrt/path', Path, queue_size=10)
 
-	my_path = path_message(rrt_path_coords)
+	#my_path = path_message(rrt_path_coords)
+	my_path = path_message(mns.rrt_path_coords)
 
 	while not rospy.is_shutdown():
 		path_rrt_publisher.publish(my_path)
@@ -82,4 +81,5 @@ def path_rrt_talker():
 if __name__ == '__main__':	
 	
     path_rrt_talker()
+
 
