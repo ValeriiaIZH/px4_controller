@@ -1,5 +1,5 @@
 # Readme 
-## Old Start
+## Start (old version 1)
 ```
 roslaunch px4 posix_sitl.launch world:=$(pwd)/Tools/sitl_gazebo/worlds/asd.world
 ```
@@ -11,7 +11,7 @@ roslaunch px4 posix_sitl.launch world:=$(pwd)/Tools/sitl_gazebo/worlds/asd.world
 source ~/src/catkin_ws/devel/setup.bash
 rosrun px4_controller position_control.py 
 ```
-## New Start with topic's
+## Start (old version 2 with topic's)
 ```
 source ~/UAV_Swarm_gazebo/catkin_ws/devel/setup.bash
 roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
@@ -44,4 +44,19 @@ You need input:
 ```
 source ~/UAV_Swarm_gazebo/catkin_ws/devel/setup.bash
 rosrun px4_controller obstacles_talker.py 
+```
+
+## The Latest Start
+- Open directory
+```
+cd UAV_Swarm_gazebo/catkin_ws/src/px4_controller/rrt_pruning_smoothing/Code
+```
+- Run python script (for scenario №2 without coverage path planning)
+
+```
+python path_planning_rrt.py
+```
+- Or run bash script (for scenario №1 with coverage path planning)
+```
+./path_planning_rrt_cpp.sh
 ```
