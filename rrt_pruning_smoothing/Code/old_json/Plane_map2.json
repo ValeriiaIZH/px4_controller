@@ -1,0 +1,20 @@
+{
+  "destination": [
+    { "latitude": 6905.043056621216, "longitude": -11225.778524559923 },
+    { "latitude": 15848.175365985371, "longitude": -11225.778524559923 },
+    { "latitude": 15848.175365985371, "longitude": 9412.219112440012 },
+    { "latitude": 6905.043056621216, "longitude": 9412.219112440012 }
+  ],
+  "reset_point": {
+    "latitude": 18924.765754465014,
+    "longitude": -8913.558418934233
+  },  
+  "start_point": {
+    "latitude": 11720.575838587247,
+    "longitude": -12811.846861477941
+  },
+  "landing_point": {
+    "latitude": 18141.286214541644,
+    "longitude": -11015.576696775854
+  }
+}

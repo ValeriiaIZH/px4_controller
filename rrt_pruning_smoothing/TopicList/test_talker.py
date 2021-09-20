@@ -42,85 +42,74 @@ from std_msgs.msg import Int64MultiArray
 from geometry_msgs.msg import Point
 import math
 
-def obstacles_talker():
-    rospy.init_node('obstacles_talker')
-    obstacles_publisher = rospy.Publisher('/path/obstacles', Int64MultiArray, queue_size=10)
+def test_talker():
+    rospy.init_node('test_talker')
+    #obstacles_publisher = rospy.Publisher('/path/obstacles', Int64MultiArray, queue_size=10)
     number_obstacles_publisher = rospy.Publisher('/path/number_obstacles', Int64MultiArray, queue_size=10)
-    
     lim_obstacles_publisher = rospy.Publisher('/path/lim_obstacles', Int64MultiArray, queue_size=10)
     path_planing_param_publisher = rospy.Publisher('/path/planing_param', Int64MultiArray, queue_size=10)
-
     start_point_publisher = rospy.Publisher('/start_point/position', Point, queue_size=10)
     goal_point_publisher = rospy.Publisher('/goal_point/position', Point, queue_size=10)
+
     #max_iter_publisher = rospy.Publisher('/path/max_iter', Int64MultiArray, queue_size=10)
     #step_size_publisher = rospy.Publisher('/path/step_size', Int64MultiArray, queue_size=10)
     #goal_reach_thresh_publisher = rospy.Publisher('/path/goal_reach_thresh', Int64MultiArray, queue_size=10)
     #drone_radius_publisher = rospy.Publisher('/path/drone_radius', Int64MultiArray, queue_size=10)
 
-    obstacles = Int64MultiArray()
+    #obstacles = Int64MultiArray()
     number_obstacles = Int64MultiArray()
-    
     lim_obstacles = Int64MultiArray()
     path_planing_param = Int64MultiArray()
-
     start_point = Point()
     goal_point = Point()
+
+    number_obstacles = 0
+    start_point.x = -5001.787385427393
+    start_point.y = 9526.705177228898
+    goal_point.x = -2833
+    goal_point.y = 4969
+
+    _xlim = -6000
+    xlim = -1000
+    _ylim = 4000
+    ylim =  10000
+
+    max_iter = 50000
+    step_size = 400
+    goal_reach_thresh = 1000
+    drone_radius = 2
+
+    lim_obstacles.data = [_xlim, xlim, _ylim, ylim]
+    path_planing_param.data = [max_iter, step_size, goal_reach_thresh, drone_radius]
+    
     #max_iter = Int64MultiArray()
     #step_size = Int64MultiArray()
     #goal_reach_thresh = Int64MultiArray
     #drone_radius = Int64MultiArray()
 
-    rate = rospy.Rate(10) # 10hz
+    #rate = rospy.Rate(10) # 10hz
 
-    while not rospy.is_shutdown(): 
-        
-        start_point.x = input("Input start x point: ")
-        start_point.y = input("Input start y point: ")
-        goal_point.x = input("Input goal x point: ")
-        goal_point.y = input("Input goal y point: ")
-
-        number = input("Input number obstacles: ")
-        print("Input plot limit")
-        _xlim = input("Input -x: ")
-        xlim = input("Input +x: ")
-        _ylim = input("Input -y: ")
-        ylim = input("Input +y: ")
-
-        number_obstacles.data = [number] 
-        number_obstacles_publisher.publish(number_obstacles)
-
-        lim_obstacles.data = [_xlim, xlim, _ylim, ylim]
-        lim_obstacles_publisher.publish(lim_obstacles)
-
-
-        s_aria = (abs(_xlim)+abs(xlim))*(abs(_ylim)+abs(ylim))
-
-        max_iter = 50000
-        step_size = 400
-        goal_reach_thresh = 1000
-        #goal_reach_thresh = math.sqrt(s_aria)*0.25
-        drone_radius = 2
-
-        path_planing_param.data = [max_iter, step_size, goal_reach_thresh, drone_radius]
-        path_planing_param_publisher.publish(path_planing_param)
-
-        start_point_publisher.publish(start_point)
-        goal_point_publisher.publish(goal_point)
-
-        for i in range(number):
-            
-            x = input("Input x coor: ")
-            y = input("Input y coor: ")
-            z = input("Input radius coor: ")
-
-            obstacles.data = [x, y, z]
-            obstacles_publisher.publish(obstacles)
-
-            rate.sleep()
-
+    #while not rospy.is_shutdown():
+        #connections = goal_point.publish.get_num_connections()
+        #rospy.loginfo('Connections: %d', connections)
+        #if connections > 0:
+    lim_obstacles_publisher.publish(lim_obstacles)
+    path_planing_param_publisher.publish(path_planing_param)
+    goal_point_publisher.publish(goal_point)
+    start_point_publisher.publish(start_point)
+            #rospy.loginfo('Published')
+            #break
+        #rate.sleep()
 
 if __name__ == '__main__':
     try:
-        obstacles_talker()
+        
+        from time import sleep
+        print 'Sleeping 10 seconds to publish'
+        sleep(10)
+        print 'Sleep finished.'
+
+        test_talker()
+
     except rospy.ROSInterruptException:
         pass

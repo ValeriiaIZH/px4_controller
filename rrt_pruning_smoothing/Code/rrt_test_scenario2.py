@@ -40,40 +40,40 @@ import sys
 import math
 import heapq
 import random 
-import json
 import numpy as np 
 import matplotlib.pyplot as plt
 sys.dont_write_bytecode = True
 
+import json
+
 import rrt
 import node_rrt
 # import univ
+import path_pruning
 import utils 
 import obstacles as obs
 import time
 
-import pickle
-import rospy
-from geometry_msgs.msg import Point
-import parameter_listener as prm
-#import path_talker as pt
- 
-X_LIM = (-10000,10000) #(prm._lim_x, prm.lim_x)
-Y_LIM = (-10000,10000) #(prm._lim_y, prm.lim_y)
 
-global my_rrt_path_coords
-my_rrt_path_coords = []
+X_LIM = (-15000,15000)
+Y_LIM = (-15000,15000)
+
+MAX_ITER = 50000
+STEP_SIZE = 400
+GOAL_REACH_THRESH = 1000	
+
+DRONE_RADIUS = 500
+
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
-
-	step_size = 400  #robot_radius* 2 
+	step_size = robot_radius * 2
 
 	rrt_nodes = {start_node.getXYCoords(): start_node}
 	
 	step_node = start_node
 
 	itr = 0
-	while (not utils.sameRegion(step_node, goal_node, 1000)) and (itr < prm.c_max_iter):  #prm.c_goal_reach_thresh
+	while (not utils.sameRegion(step_node, goal_node, GOAL_REACH_THRESH)) and (itr < MAX_ITER):
 		# print("Iteration number:", itr)
 		itr += 1
 
@@ -93,7 +93,7 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 			# plt.show()
 			# plt.pause(0.5)
 
-		if rrt.hitsObstacle(start_node=closest_node, goal_node=step_node, step_size=400): #!!!!
+		if rrt.hitsObstacle(start_node=closest_node, goal_node=step_node, step_size=(robot_radius/2)):
 			if plotter is not None:
 				utils.plotPoint(step_node.getXYCoords(), plotter, radius=0.04, color='red')
 				cn_x, cn_y = closest_node.getXYCoords()
@@ -121,7 +121,7 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 			plt.savefig('./frames/' + str(itr) + '.png')
 
 	# Reached Goal
-	if utils.sameRegion(step_node, goal_node, 1000):  #prm.c_goal_reach_thresh
+	if utils.sameRegion(step_node, goal_node, GOAL_REACH_THRESH):
 		print("Reached Goal!")
 		print("Number of iterations:", itr)
 
@@ -140,84 +140,63 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 
 def main():
+
+	json_data = []
+	with open('Map2.json', 'r') as f: 
+		json_data = json.load(f) 
+		start_point_ = json_data.get('start_point')
+		#centroid_ = json_data.get('centroid')
+	'''json_data_2 = []
+	with open('Scenario2.json', 'r') as d: 
+		json_data_2 = json.load(d) 
+		target_point = json_data_2.get('centroid')'''	
+
+	x = [-957.3915945077315, -910.8959478922188, -948.4347058273852, -875.1556231221184, -845.2041011163965, -858.6145041380078, -919.3042095946148, -942.3035844964907, -933.9325257679448, -889.955683006905]
+	y = [-855.0138749238104, -895.5183857586235, -921.3926183544099, -947.264425364323, -858.3795844987035, -861.4421726837754, -895.0775583777577, -844.3298955513164, -922.8892891705036, -887.7070486117154]
+	centroid = [sum(x) / len(x), sum(y) / len(y)]
+	print(centroid)
+	start_point = start_point_.values()
+	#target_point = centroid_.values()
+	print(type(start_point))
+	print(centroid)
 	start_time  = time.time()
+	start_node = node_rrt.Node_rrt(current_coords=(start_point[0],start_point[1]), parent_coords=None, distance=0)
+	goal_node = node_rrt.Node_rrt(current_coords=(centroid[0],centroid[1]), parent_coords=None, distance=0)
 
-	prm.main()
-
-	print(X_LIM)
-	#possition_listener()
-	if (prm.start_pose_x == None) or (prm.start_pose_y == None):
-		rospy.loginfo("Problem with start coordinates!")
-		rospy.loginfo("Start x: '%s' and y: '%s' coordinates", str(prm.start_pose_x), str(prm.start_pose_y))
-		sys.exit(0)
-	elif  (prm.goal_pose_x == None) or (prm.goal_pose_y == None):
-		rospy.loginfo("Problem with goal coordinates!")
-		rospy.loginfo("Goal x: '%s' and y: '%s' coordinates", str(prm.goal_pose_x), str(prm.goal_pose_y))
-		sys.exit(0)
-	start_node = node_rrt.Node_rrt(current_coords=(prm.start_pose_x, prm.start_pose_y), parent_coords=None, distance=0)
-	goal_node = node_rrt.Node_rrt(current_coords=(prm.goal_pose_x, prm.goal_pose_y), parent_coords=None, distance=0)
-	#start_node = node_rrt.Node_rrt(current_coords=(0, 0), parent_coords=None, distance=0)
-	#goal_node = node_rrt.Node_rrt(current_coords=(5, 5), parent_coords=None, distance=0)
-	
 	fig, ax = plt.subplots()
-	ax.set_xlim(prm._lim_x, prm.lim_x)
-	ax.set_ylim(prm._lim_y, prm.lim_y)
+	ax.set_xlim(-15000, 15000)
+	ax.set_ylim(-15000, 15000)
 	fig.gca().set_aspect('equal', adjustable='box')
 	utils.plotPoint(start_node.getXYCoords(), ax, radius=0.06, color='cyan') 	# start
 	utils.plotPoint(goal_node.getXYCoords(), ax, radius=0.06, color='magenta') 	# end
 
-	#obs.testMain()
 	obs.generateMap(ax)
 
 	plt.ion()
-	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, robot_radius = prm.c_drone_radius, plotter=ax, write=False)
+	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, STEP_SIZE, plotter=ax, write=False)
 	if rrt_path is not None:
 		utils.plotPath(rrt_path, plotter=ax)
-
-	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
-	path_length = utils.path_length_meters(rrt_path_coords)
-	try:
-		capacity = float(str(prm.capacity)[5:])
-		max_length = float(str(prm.max_length)[5:])
-		max_uav_path = capacity*max_length
-		if max_uav_path < path_length:
-			print("\nWarning!")
-			print("Path cannot be overcomed!")
-		else:
-			print("Path can be overcomed!")
-	except:
-		print("Capacity and maximum path lenght was not entered!")
 
 	finish_time = time.time()
 	result = finish_time - start_time
 	print("Program time: " + str(result) + " seconds.")
 
-	#global rrt_path_coords_c
-	#rrt_path_coords_c = []
-	#rrt_path_coords_c = utils.convertNodeList2CoordList(node_list=rrt_path)
+	plt.ioff()
+
+	path_co = np.array(utils.convertNodeList2CoordList(rrt_path))
+
+	rrt_prune_smooth_path_coords=path_pruning.prunedPath(path=path_co, radius=DRONE_RADIUS, clearance=(DRONE_RADIUS/2))
+	rrt_prune_smooth_path_coords= np.array(rrt_prune_smooth_path_coords[::-1])
+	plt.plot(rrt_prune_smooth_path_coords[:,0],rrt_prune_smooth_path_coords[:,1],'cyan')
+	
+	plt.show()
+
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
-
-
-	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_.txt', 'w') as fp:
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_test_scenario2.txt', 'w') as fp:
 		fp.write('\n'.join('%s %s' % x for x in rrt_path_coords))
 
-	#f = open('path.txt', 'w')
-	#for element in rrt_path_coords:
-		#line = ' '.join(str(x) for x in element)
-		#f.write(line + '\n')
-		#f.close()
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_test__scenario2_smooth.txt', 'w') as dp:
+		dp.write('\n'.join('%s %s' % x for x in list(map(tuple, rrt_prune_smooth_path_coords))))
 
-	#with open('path.txt', 'w') as f:
-	#	for item in rrt_path_coords:
-	#		f.write(json.dumps(rrt_path_coords))	
-	plt.ioff()
-	plt.show()
-	sys.exit
-
-	#return(rrt_path_coords_c)
-
-	
-if __name__ == '__main__':	
+if __name__ == '__main__':
 	main()
-	#rrt_path_coords = main()
-

@@ -83,11 +83,11 @@ DRONE_RADIUS = 2
 X_LIM = (prm._lim_x, prm.lim_x)
 Y_LIM = (prm._lim_y, prm.lim_y)
 
-MAX_ITER = 5000
-STEP_SIZE = 0.1
-GOAL_REACH_THRESH = 2
+MAX_ITER = 50000
+STEP_SIZE = 400
+GOAL_REACH_THRESH = 1000
 
-DRONE_RADIUS = 0.3
+DRONE_RADIUS = 2
 
 """start_pose_x = None
 start_pose_y = None
@@ -282,16 +282,18 @@ def main():
 	except:
 		print("Capacity and maximum path lenght was not entered!")
 
+	with open('path.txt', 'w') as f:
+		f.write(json.dumps(rrt_path_coords))		
 	plt.ioff()
 	plt.show()
 
-	plt.savefig(('./frames/%04d.png' % (itr))); itr += 1
+	#plt.savefig(('./frames/%04d.png' % (itr))); itr += 1
 
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
 
 	#np.save(file='rrt_path_nodes.npy', arr=rrt_path)
 	#np.save(file='rrt_path_coords.npy', arr=rrt_path_coords)
-	np.save(file='rrt_sim_smooth_path_coords.npy', arr=rrt_prune_smooth_path_coords)
+	#np.save(file='rrt_sim_smooth_path_coords.npy', arr=rrt_prune_smooth_path_coords)
 
 if __name__ == '__main__':
 	main()
