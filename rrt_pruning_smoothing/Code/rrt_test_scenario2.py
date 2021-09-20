@@ -48,8 +48,8 @@ import json
 
 import rrt
 import node_rrt
-import path_pruning
 # import univ
+import path_pruning
 import utils 
 import obstacles as obs
 import time
@@ -66,7 +66,7 @@ DRONE_RADIUS = 500
 
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
-	step_size = robot_radius #* 2
+	step_size = robot_radius * 2
 
 	rrt_nodes = {start_node.getXYCoords(): start_node}
 	
@@ -144,15 +144,24 @@ def main():
 	json_data = []
 	with open('Map2.json', 'r') as f: 
 		json_data = json.load(f) 
-		reset_point_ = json_data.get('reset_point')
-		landing_point_ = json_data.get('landing_point')
+		start_point_ = json_data.get('start_point')
+		#centroid_ = json_data.get('centroid')
+	'''json_data_2 = []
+	with open('Scenario2.json', 'r') as d: 
+		json_data_2 = json.load(d) 
+		target_point = json_data_2.get('centroid')'''	
 
-	reset_point = reset_point_.values()
-	landing_point = landing_point_.values()
-
+	x = [-957.3915945077315, -910.8959478922188, -948.4347058273852, -875.1556231221184, -845.2041011163965, -858.6145041380078, -919.3042095946148, -942.3035844964907, -933.9325257679448, -889.955683006905]
+	y = [-855.0138749238104, -895.5183857586235, -921.3926183544099, -947.264425364323, -858.3795844987035, -861.4421726837754, -895.0775583777577, -844.3298955513164, -922.8892891705036, -887.7070486117154]
+	centroid = [sum(x) / len(x), sum(y) / len(y)]
+	print(centroid)
+	start_point = start_point_.values()
+	#target_point = centroid_.values()
+	print(type(start_point))
+	print(centroid)
 	start_time  = time.time()
-	start_node = node_rrt.Node_rrt(current_coords=(reset_point[0], reset_point[1]), parent_coords=None, distance=0)
-	goal_node = node_rrt.Node_rrt(current_coords=(landing_point[0],landing_point[1] ), parent_coords=None, distance=0)
+	start_node = node_rrt.Node_rrt(current_coords=(start_point[0],start_point[1]), parent_coords=None, distance=0)
+	goal_node = node_rrt.Node_rrt(current_coords=(centroid[0],centroid[1]), parent_coords=None, distance=0)
 
 	fig, ax = plt.subplots()
 	ax.set_xlim(-15000, 15000)
@@ -179,15 +188,15 @@ def main():
 	rrt_prune_smooth_path_coords=path_pruning.prunedPath(path=path_co, radius=DRONE_RADIUS, clearance=(DRONE_RADIUS/2))
 	rrt_prune_smooth_path_coords= np.array(rrt_prune_smooth_path_coords[::-1])
 	plt.plot(rrt_prune_smooth_path_coords[:,0],rrt_prune_smooth_path_coords[:,1],'cyan')
-
+	
 	plt.show()
 
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
-	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_land_test.txt', 'w') as fp:
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_test_scenario2.txt', 'w') as fp:
 		fp.write('\n'.join('%s %s' % x for x in rrt_path_coords))
-	
-	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_land_test_smooth.txt', 'w') as fp:
-		fp.write('\n'.join('%s %s' % x for x in list(map(tuple, rrt_prune_smooth_path_coords))))
+
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_test__scenario2_smooth.txt', 'w') as dp:
+		dp.write('\n'.join('%s %s' % x for x in list(map(tuple, rrt_prune_smooth_path_coords))))
 
 if __name__ == '__main__':
 	main()

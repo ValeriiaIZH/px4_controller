@@ -60,13 +60,13 @@ Y_LIM = (-15000,15000)
 
 MAX_ITER = 50000
 STEP_SIZE = 400
-GOAL_REACH_THRESH = 1000	
+GOAL_REACH_THRESH = 800	
 
-DRONE_RADIUS = 500
+DRONE_RADIUS = 100
 
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
-	step_size = robot_radius #* 2
+	step_size = robot_radius * 2
 
 	rrt_nodes = {start_node.getXYCoords(): start_node}
 	
@@ -176,17 +176,17 @@ def main():
 
 	path_co = np.array(utils.convertNodeList2CoordList(rrt_path))
 
-	rrt_prune_smooth_path_coords=path_pruning.prunedPath(path=path_co, radius=DRONE_RADIUS, clearance=(DRONE_RADIUS/2))
+	rrt_prune_smooth_path_coords=path_pruning.prunedPath(path=path_co, radius=DRONE_RADIUS, clearance=(DRONE_RADIUS))
 	rrt_prune_smooth_path_coords= np.array(rrt_prune_smooth_path_coords[::-1])
 	plt.plot(rrt_prune_smooth_path_coords[:,0],rrt_prune_smooth_path_coords[:,1],'cyan')
 
 	plt.show()
 
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
-	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_land_test.txt', 'w') as fp:
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/px4_controller/rrt_pruning_smoothing/Code/path_rrt_land_test_scenario2.txt', 'w') as fp:
 		fp.write('\n'.join('%s %s' % x for x in rrt_path_coords))
 	
-	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_land_test_smooth.txt', 'w') as fp:
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/px4_controller/rrt_pruning_smoothing/Code/path_rrt_land_test_smooth_scenario2.txt', 'w') as fp:
 		fp.write('\n'.join('%s %s' % x for x in list(map(tuple, rrt_prune_smooth_path_coords))))
 
 if __name__ == '__main__':

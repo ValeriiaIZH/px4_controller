@@ -44,26 +44,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 sys.dont_write_bytecode = True
 
+import json
+
 import rrt
 import node_rrt
 # import univ
+import path_pruning
 import utils 
 import obstacles as obs
 import time
 
 
-X_LIM = (-6000,0)
-Y_LIM = (-6000,1000)
+X_LIM = (-15000,15000)
+Y_LIM = (-15000,15000)
 
 MAX_ITER = 50000
 STEP_SIZE = 400
 GOAL_REACH_THRESH = 1000	
 
-DRONE_RADIUS = 2
+DRONE_RADIUS = 500
 
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
-	step_size = robot_radius * 2
+	step_size = robot_radius #* 2
 
 	rrt_nodes = {start_node.getXYCoords(): start_node}
 	
@@ -137,13 +140,26 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 
 def main():
+	with open("/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_cpp.txt", "r") as ins:
+		path_cpp = []
+		for line in ins:
+			path_cpp.append([float(line) for line in line.split()]) # here send a list path_cpp
+
+	point_of_exit = path_cpp[-1]
+	json_data = []
+	with open('Map2.json', 'r') as f: 
+		json_data = json.load(f) 
+		reset_point = json_data.get('reset_point')
+
+	drop_location = reset_point.values()
+
 	start_time  = time.time()
-	start_node = node_rrt.Node_rrt(current_coords=(-2783, -5980), parent_coords=None, distance=0)
-	goal_node = node_rrt.Node_rrt(current_coords=(-6836.276064271107, 392.4802971482277), parent_coords=None, distance=0)
+	start_node = node_rrt.Node_rrt(current_coords=(point_of_exit[0],point_of_exit[1] ), parent_coords=None, distance=0)
+	goal_node = node_rrt.Node_rrt(current_coords=(drop_location[0], drop_location[1]), parent_coords=None, distance=0)
 
 	fig, ax = plt.subplots()
-	ax.set_xlim(-6000, 0)
-	ax.set_ylim(-6000, 1000)
+	ax.set_xlim(-15000, 15000)
+	ax.set_ylim(-15000, 15000)
 	fig.gca().set_aspect('equal', adjustable='box')
 	utils.plotPoint(start_node.getXYCoords(), ax, radius=0.06, color='cyan') 	# start
 	utils.plotPoint(goal_node.getXYCoords(), ax, radius=0.06, color='magenta') 	# end
@@ -160,14 +176,21 @@ def main():
 	print("Program time: " + str(result) + " seconds.")
 
 	plt.ioff()
+
+	path_co = np.array(utils.convertNodeList2CoordList(rrt_path))
+
+	rrt_prune_smooth_path_coords=path_pruning.prunedPath(path=path_co, radius=DRONE_RADIUS, clearance=(DRONE_RADIUS/2))
+	rrt_prune_smooth_path_coords= np.array(rrt_prune_smooth_path_coords[::-1])
+	plt.plot(rrt_prune_smooth_path_coords[:,0],rrt_prune_smooth_path_coords[:,1],'cyan')
+	
 	plt.show()
 
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
 	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_reset_test.txt', 'w') as fp:
 		fp.write('\n'.join('%s %s' % x for x in rrt_path_coords))
-	
-	# np.save(file='rrt_path_nodes.npy', arr=rrt_path)
-	# np.save(file='rrt_path_coords.npy', arr=rrt_path_coords)
+
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_reset_test_smooth.txt', 'w') as fp:
+		fp.write('\n'.join('%s %s' % x for x in list(map(tuple, rrt_prune_smooth_path_coords))))
 
 if __name__ == '__main__':
 	main()

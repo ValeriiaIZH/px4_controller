@@ -44,26 +44,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 sys.dont_write_bytecode = True
 
+import json
+
+from sklearn.neighbors import KDTree
+
 import rrt
 import node_rrt
 # import univ
+import path_pruning
 import utils 
 import obstacles as obs
 import time
 
 
-X_LIM = (-6000,-1000)
-Y_LIM = (4000,10000)
+X_LIM = (-15000,15000)
+Y_LIM = (-15000,15000)
 
 MAX_ITER = 50000
 STEP_SIZE = 400
 GOAL_REACH_THRESH = 1000	
 
-DRONE_RADIUS = 2
+DRONE_RADIUS = 500
 
 
 def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
-	step_size = robot_radius * 2
+	step_size = robot_radius # *2
 
 	rrt_nodes = {start_node.getXYCoords(): start_node}
 	
@@ -137,13 +142,40 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 
 def main():
-	start_time  = time.time()
-	start_node = node_rrt.Node_rrt(current_coords=(-5001.787385427393, 9526.705177228898), parent_coords=None, distance=0)
-	goal_node = node_rrt.Node_rrt(current_coords=(-2783, 4819), parent_coords=None, distance=0)
+	json_data = []
+	with open('Map2.json', 'r') as f: 
+		json_data = json.load(f) 
+		start_point = json_data.get('start_point')
+		print(start_point.values())
+
+	# find nearest point
+	uav_location = start_point.values()
+	with open("/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_cpp.txt", "r") as ins:
+		path_cpp = []
+		for line in ins:
+			path_cpp.append([float(line) for line in line.split()]) # here send a list path_cpp
+	samples = np.array(path_cpp)
+	samples.sort(kind='quicksort')
+	tree = KDTree(samples)
+	uav_location_ = np.array([uav_location]) #here pud a goal pos after rrt
+	closest_dist, closest_id = tree.query(uav_location_, k=1)  # closest point with respect to the uav location
+	point_of_entery = samples[closest_id]
+	new_path_cpp = path_cpp[int(closest_id):]
+	new_path_cpp.extend(path_cpp[:int(closest_id)])
+	del path_cpp[0:int(closest_id)]
+	path_cpp_of_tuples = [tuple(l) for l in path_cpp]
+	print(point_of_entery)
+	#print(int(closest_id))
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_cpp_.txt', 'w') as fp:
+		fp.write('\n'.join('%s %s' % x for x in path_cpp_of_tuples))
+	# rrt path planning
+	start_time = time.time()
+	start_node = node_rrt.Node_rrt(current_coords=(uav_location[0], uav_location[1]), parent_coords=None, distance=0)
+	goal_node = node_rrt.Node_rrt(current_coords=(point_of_entery[0,0,0], point_of_entery[0,0,1]), parent_coords=None, distance=0)
 
 	fig, ax = plt.subplots()
-	ax.set_xlim(-6000, -1000)
-	ax.set_ylim(4000, 10000)
+	ax.set_xlim(-15000, 15000)
+	ax.set_ylim(-15000, 15000)
 	fig.gca().set_aspect('equal', adjustable='box')
 	utils.plotPoint(start_node.getXYCoords(), ax, radius=0.06, color='cyan') 	# start
 	utils.plotPoint(goal_node.getXYCoords(), ax, radius=0.06, color='magenta') 	# end
@@ -160,14 +192,22 @@ def main():
 	print("Program time: " + str(result) + " seconds.")
 
 	plt.ioff()
-	plt.show()
+	
+	path_co = np.array(utils.convertNodeList2CoordList(rrt_path))
 
+	rrt_prune_smooth_path_coords=path_pruning.prunedPath(path=path_co, radius=DRONE_RADIUS, clearance=(DRONE_RADIUS/2))
+	rrt_prune_smooth_path_coords= np.array(rrt_prune_smooth_path_coords[::-1])
+
+	plt.plot(rrt_prune_smooth_path_coords[:,0],rrt_prune_smooth_path_coords[:,1],'cyan')
+	plt.show()
+	
 	rrt_path_coords = utils.convertNodeList2CoordList(node_list=rrt_path)
+	#print(rrt_path_coords)
 	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_start_test.txt', 'w') as fp:
 		fp.write('\n'.join('%s %s' % x for x in rrt_path_coords))
 	
-	# np.save(file='rrt_path_nodes.npy', arr=rrt_path)
-	# np.save(file='rrt_path_coords.npy', arr=rrt_path_coords)
+	with open('/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_rrt_start_test_smooth.txt', 'w') as fp:
+		fp.write('\n'.join('%s %s' % x for x in list(map(tuple, rrt_prune_smooth_path_coords))))
 
 if __name__ == '__main__':
 	main()
