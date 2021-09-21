@@ -5,10 +5,10 @@ import os
 
 # At first, change the path of working directories
 
-# Next, check for the presence of the mission JSON file 
+# Next, check for the presence of the mission JSON files(Map2.json, Obs.json, Targets.json),  
 # in px4_controller/rrt_pruning_smoothing/Code
 
-# Then, check the path to the mission JSON file in 
+# Then, check the path to the mission JSON files(Map2.json, Obs.json, Targets.json), 
 # px4_controller/rrt_pruning_smoothing/python rrt_(start/reset/land)_scenario2.py
 
 # Sequential trajectory calculation
