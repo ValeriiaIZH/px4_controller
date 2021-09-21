@@ -1,4 +1,25 @@
 # Readme 
+
+## The Latest Start
+- Open directory
+```
+cd UAV_Swarm_gazebo/catkin_ws/src/px4_controller/rrt_pruning_smoothing/Code
+```
+At first, change the path of working directories. Next, check for the presence of the mission JSON file in coverage_planner/scripts and px4_controller/rrt_pruning_smoothing/Code
+- Run bash script (for scenario №1 with coverage path planning). Then, check the path to the mission JSON file in coverage_planner/scripts/initpose.py and px4_controller/rrt_pruning_smoothing/python rrt_(start/reset/land)_test.py
+```
+./path_planning_rrt_cpp.sh
+```
+As a result 2 files: global_path_interface.txt without smoothing and global_path_interface_smooth.txt with smoothing. These trajectories are already transmitted to the flight controller and to the interface for display on the map.
+
+- Or run python script (for scenario №2 without coverage path planning)
+At first, change the path of working directories. Next, check for the presence of the mission JSON files(Map2.json, Obs.json, Targets.json) in px4_controller/rrt_pruning_smoothing/Code
+```
+python path_planning_rrt.py
+```
+As a result 2 files: path_global_scenario2.txt without smoothing and path_global_scenario2_smooth.txt with. These trajectories are already transmitted to the flight controller and to the interface for display on the map.
+
+
 ## Start (old version 1)
 ```
 roslaunch px4 posix_sitl.launch world:=$(pwd)/Tools/sitl_gazebo/worlds/asd.world
@@ -46,17 +67,4 @@ source ~/UAV_Swarm_gazebo/catkin_ws/devel/setup.bash
 rosrun px4_controller obstacles_talker.py 
 ```
 
-## The Latest Start
-- Open directory
-```
-cd UAV_Swarm_gazebo/catkin_ws/src/px4_controller/rrt_pruning_smoothing/Code
-```
-- Run python script (for scenario №2 without coverage path planning)
 
-```
-python path_planning_rrt.py
-```
-- Or run bash script (for scenario №1 with coverage path planning)
-```
-./path_planning_rrt_cpp.sh
-```
