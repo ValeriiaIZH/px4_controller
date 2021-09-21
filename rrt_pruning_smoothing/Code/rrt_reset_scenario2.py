@@ -43,7 +43,7 @@ import random
 import numpy as np 
 import matplotlib.pyplot as plt
 sys.dont_write_bytecode = True
-
+import os
 import json
 
 import rrt
@@ -122,7 +122,7 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 	# Reached Goal
 	if utils.sameRegion(step_node, goal_node, GOAL_REACH_THRESH):
-		print("Reached Goal!")
+		print("####!!!!Reached Goal!!!!####")
 		print("Number of iterations:", itr)
 
 		goal_node.parent_coords = closest_node.getXYCoords()
@@ -140,21 +140,32 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 
 def main():
-	with open("/home/valeriia/UAV_Swarm_gazebo/catkin_ws/src/coverage_planner/scripts/path_cpp.txt", "r") as ins:
-		path_cpp = []
-		for line in ins:
-			path_cpp.append([float(line) for line in line.split()]) # here send a list path_cpp
-
-	point_of_exit = path_cpp[-1]
 	json_data = []
-	with open('Map2.json', 'r') as f: 
-		json_data = json.load(f) 
-		reset_point = json_data.get('reset_point')
+	if os.path.exists('Map2.json'):
+		with open('Map2.json', 'r') as f: 
+			json_data = json.load(f) 
+			reset_point = json_data.get('reset_point')
+		drop_location = reset_point.values()
+	else:
+		print('####!!!!There is no file with mission!!!!####')
 
-	drop_location = reset_point.values()
-	x = [-957.3915945077315, -910.8959478922188, -948.4347058273852, -875.1556231221184, -845.2041011163965, -858.6145041380078, -919.3042095946148, -942.3035844964907, -933.9325257679448, -889.955683006905]
-	y = [-855.0138749238104, -895.5183857586235, -921.3926183544099, -947.264425364323, -858.3795844987035, -861.4421726837754, -895.0775583777577, -844.3298955513164, -922.8892891705036, -887.7070486117154]
-	centroid = [sum(x) / len(x), sum(y) / len(y)]
+	json_data_2 = []
+	x_arr = []
+	y_arr = []
+
+	if os.path.exists('Targets.json'):
+		with open('Targets.json', 'r') as d: 
+			json_data_2 = json.load(d) 
+			target_point_arr = json_data_2.get('points')
+		for i in range(len(target_point_arr)):
+			target_point_arr_ = target_point_arr[i]
+			x = target_point_arr_[0]
+			y = target_point_arr_[1]	
+			x_arr.append(x)
+			y_arr.append(y)
+		centroid = [sum(x_arr) / len(x_arr), sum(y_arr) / len(y_arr)]
+	else:
+		print('####!!!!There is no file with targets!!!!####')
 	start_time  = time.time()
 	start_node = node_rrt.Node_rrt(current_coords=(centroid[0],centroid[1] ), parent_coords=None, distance=0)
 	goal_node = node_rrt.Node_rrt(current_coords=(drop_location[0], drop_location[1]), parent_coords=None, distance=0)
@@ -169,6 +180,7 @@ def main():
 	obs.generateMap(ax)
 
 	plt.ion()
+	# Set plotter=None here to disable animation
 	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, STEP_SIZE, plotter=ax, write=False)
 	if rrt_path is not None:
 		utils.plotPath(rrt_path, plotter=ax)

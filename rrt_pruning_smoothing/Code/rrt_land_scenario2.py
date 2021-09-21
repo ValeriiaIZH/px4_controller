@@ -43,7 +43,7 @@ import random
 import numpy as np 
 import matplotlib.pyplot as plt
 sys.dont_write_bytecode = True
-
+import os
 import json
 
 import rrt
@@ -122,7 +122,7 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 	# Reached Goal
 	if utils.sameRegion(step_node, goal_node, GOAL_REACH_THRESH):
-		print("Reached Goal!")
+		print("####!!!!Reached Goal!!!!####")
 		print("Number of iterations:", itr)
 
 		goal_node.parent_coords = closest_node.getXYCoords()
@@ -140,15 +140,16 @@ def rrtPlannedPath(start_node, goal_node, robot_radius, plotter, write=False):
 
 
 def main():
-
 	json_data = []
-	with open('Map2.json', 'r') as f: 
-		json_data = json.load(f) 
-		reset_point_ = json_data.get('reset_point')
-		landing_point_ = json_data.get('landing_point')
-
-	reset_point = reset_point_.values()
-	landing_point = landing_point_.values()
+	if os.path.exists('Map2.json'):
+		with open('Map2.json', 'r') as f: 
+			json_data = json.load(f) 
+			reset_point_ = json_data.get('reset_point')
+			landing_point_ = json_data.get('landing_point')
+		reset_point = reset_point_.values()
+		landing_point = landing_point_.values()
+	else:
+		print('####!!!!There is no file with mission!!!!####')
 
 	start_time  = time.time()
 	start_node = node_rrt.Node_rrt(current_coords=(reset_point[0], reset_point[1]), parent_coords=None, distance=0)
@@ -164,6 +165,7 @@ def main():
 	obs.generateMap(ax)
 
 	plt.ion()
+	# Set plotter=None here to disable animation
 	rrt_path, _, itr = rrtPlannedPath(start_node, goal_node, STEP_SIZE, plotter=ax, write=False)
 	if rrt_path is not None:
 		utils.plotPath(rrt_path, plotter=ax)

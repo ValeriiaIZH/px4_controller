@@ -46,8 +46,8 @@ def prunedPath(path, radius, clearance):
 	# 		print("!-------!")
 	# 	print("_____")
 
-	print("pruned_path: ", pruned_path)
-	print("len(pruned_path): ", len(pruned_path))
+	#print("pruned_path: ", pruned_path)
+	#print("len(pruned_path): ", len(pruned_path))
 
 	return pruned_path
 

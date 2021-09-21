@@ -39,6 +39,7 @@
 from operator import pos
 import sys
 import json
+import os
 
 from numpy.core.defchararray import array
 from six.moves import xrange
@@ -63,26 +64,25 @@ def withinObstacleSpace(point, radius, clearance):
 
 	flag = False
 	point = Point(x, y)
-
-	# creating rectangles
+	# TODO: Add the ability to read multiple obstacles
+	# creating rectangles from file
 	json_data = []
 	x_arr_obs = []
 	y_arr_obs = []
-	with open('Obs.json', 'r') as f:
-		json_data = json.load(f)
-		points_arr = json_data.get('points')
-	for i in range(len(points_arr)):
-		points_arr_ = points_arr[i]
-		x = points_arr_[0]
-		y = points_arr_[1]
-		x_arr_obs.append(x)
-		y_arr_obs.append(y)
 	
-	rectangle_1 = Polygon(zip(x_arr_obs,y_arr_obs))
-	#rectangle_1 = Polygon([(-2845.4553640065715, -2602.726271134801), (-1216.3911986788735, -2602.726271134801), (-1216.3911986788735, -1327.1833616271615), (-2845.4553640065715, -1327.1833616271615)])
-
-	if point.distance(rectangle_1) <= radius + clearance:
-		flag = True
+	if os.path.exists('Obs.json'):	
+		with open('Obs.json', 'r') as f:
+			json_data = json.load(f)
+			points_arr = json_data.get('points')
+		for i in range(len(points_arr)):
+			points_arr_ = points_arr[i]
+			x = points_arr_[0]
+			y = points_arr_[1]
+			x_arr_obs.append(x)
+			y_arr_obs.append(y)
+		rectangle_1 = Polygon(zip(x_arr_obs,y_arr_obs))
+		if point.distance(rectangle_1) <= radius + clearance:
+			flag = True
 
 	for i in xrange(len(prm.possition)):
 		print(prm.possition)
@@ -96,8 +96,6 @@ def withinObstacleSpace(point, radius, clearance):
 
 		if point.distance(number_circle) <= radius + clearance:
 			flag = True
-
-
 	return flag
 
 
@@ -133,19 +131,21 @@ def generateMap(plotter=plt):
 	json_data = []
 	x_arr_obs = []
 	y_arr_obs = []
-	with open('Obs.json', 'r') as f:
-		json_data = json.load(f)
-		points_arr = json_data.get('points')
-	for i in range(len(points_arr)):
-		points_arr_ = points_arr[i]
-		x = points_arr_[0]
-		y = points_arr_[1]
-		x_arr_obs.append(x)
-		y_arr_obs.append(y)
-	
-	rectangle_1 = plt.Polygon(zip(x_arr_obs,y_arr_obs))
-	plotter.add_line(rectangle_1)
-	
+	if os.path.exists('Obs.json'):	
+		with open('Obs.json', 'r') as f:
+			json_data = json.load(f)
+			points_arr = json_data.get('points')
+		for i in range(len(points_arr)):
+			points_arr_ = points_arr[i]
+			x = points_arr_[0]
+			y = points_arr_[1]
+			x_arr_obs.append(x)
+			y_arr_obs.append(y)
+		rectangle_1 = plt.Polygon(zip(x_arr_obs,y_arr_obs))
+		plotter.add_line(rectangle_1)
+	else:
+		print('####!!!!There is no file with obstacles!!!!####')
+
 	for i in xrange(len(prm.possition)):
 		print(prm.possition)
 
@@ -161,9 +161,6 @@ def generateMap(plotter=plt):
 		#plotter.add_artist(circle_3)
 		#plotter.add_artist(circle_4)
 	
-
-
-
 def testMain():
 	# x = float(sys.argv[1])
 	# y = float(sys.argv[2])
